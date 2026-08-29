@@ -1,0 +1,4 @@
+phrase_id,grade,domain,learning_outcome,hindi_text,target_text,transliteration,audio_file,reviewer,review_status,notes
+count_001,1,numeracy,counting_objects,गिनकर बताओ कि कितने आम हैं।,,,,,needs_review,Do not publish until native review
+read_001,1,literacy,oral_language,चित्र देखकर शब्द बोलो।,,,,,needs_review,Do not publish until native review
+math_001,1,numeracy,more_less,किस समूह में अधिक वस्तुएँ हैं?,,,,,needs_review,Do not publish until native review
