@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -9,6 +11,11 @@ android {
     compileSdk = 35
     buildToolsVersion = "35.0.0"
     val localDebugKeystore = file("../signing/debug.keystore")
+    val releaseSigningProperties = Properties().apply {
+        val propertiesFile = file("../signing/release-upload.properties")
+        if (propertiesFile.exists()) propertiesFile.inputStream().use { load(it) }
+    }
+    val releaseKeystore = file("../signing/release-upload.keystore")
     signingConfigs {
         if (localDebugKeystore.exists()) {
             create("localDebug") {
@@ -18,10 +25,22 @@ android {
                 keyPassword = "android"
             }
         }
+        if (releaseKeystore.exists() && releaseSigningProperties.isNotEmpty()) {
+            create("playUpload") {
+                storeFile = releaseKeystore
+                storePassword = releaseSigningProperties.getProperty("storePassword")
+                keyAlias = releaseSigningProperties.getProperty("keyAlias")
+                keyPassword = releaseSigningProperties.getProperty("keyPassword")
+            }
+        }
     }
     buildTypes {
         getByName("debug") {
             if (localDebugKeystore.exists()) signingConfig = signingConfigs.getByName("localDebug")
+        }
+        getByName("release") {
+            if (releaseKeystore.exists() && releaseSigningProperties.isNotEmpty()) signingConfig = signingConfigs.getByName("playUpload")
+            isMinifyEnabled = false
         }
     }
     defaultConfig {
