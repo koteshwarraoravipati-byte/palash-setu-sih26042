@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,7 +29,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -43,7 +43,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -117,25 +120,32 @@ fun PalashSetuApp() {
 private fun iconFor(screen: Screen) = when (screen) { Screen.HOME -> "⌂"; Screen.LIVE -> "◉"; Screen.LESSONS -> "▣"; Screen.AIDS -> "□" }
 
 @Composable private fun Header() {
-    Row(Modifier.fillMaxWidth().background(Navy).padding(horizontal = 18.dp, vertical = 13.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().background(Navy).padding(horizontal = 16.dp, vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
+        Image(painterResource(com.teamsprit.palashsetu.R.drawable.palash_setu_icon), "PALASH Setu logo", Modifier.size(42.dp).clip(RoundedCornerShape(12.dp)), contentScale = ContentScale.Crop)
+        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text("PALASH SETU", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Text("Offline mother-tongue FLN • Team Sprit", color = Color(0xFFD6E7F5), fontSize = 11.sp)
         }
-        Text("OFFLINE", color = Color(0xFFF2B543), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+        Column(horizontalAlignment = Alignment.End) {
+            Text("OFFLINE", color = Color(0xFFF2B543), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+            Text("SANTHALI", color = Color(0xFF7FE3D6), fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
+        }
     }
 }
 
 @Composable private fun HomeScreen(onLive: () -> Unit) {
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
-            Card(colors = CardDefaults.cardColors(containerColor = PaleTeal), shape = RoundedCornerShape(18.dp)) {
-                Column(Modifier.padding(18.dp)) {
-                    Text("Ready for a classroom", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Navy)
+            Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Brush.linearGradient(listOf(Navy, Blue)))) {
+                Column(Modifier.padding(20.dp)) {
+                    Text("READY FOR THE CLASSROOM", color = Color(0xFF9BE8DE), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Spacer(Modifier.height(5.dp))
+                    Text("Teach with confidence.", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color.White)
                     Spacer(Modifier.height(6.dp))
-                    Text("Lessons and teaching aids remain available after synchronisation—even without internet.", color = Navy)
-                    Spacer(Modifier.height(12.dp))
-                    Button(onClick = onLive) { Text("Open Live Classroom") }
+                    Text("Lessons and teaching aids stay ready after synchronisation—even without internet.", color = Color(0xFFE7F2FA))
+                    Spacer(Modifier.height(14.dp))
+                    Button(onClick = onLive, colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Navy)) { Text("Open Live Classroom") }
                 }
             }
         }
@@ -266,7 +276,7 @@ private fun findApprovedPhrase(recognisedHindi: String): Phrase? {
                 }
                 measuredLatencyMs?.let { Text("Measured local recognition + lookup: ${it} ms", fontSize = 11.sp, color = Color.Gray) }
                 Spacer(Modifier.height(8.dp))
-                Divider()
+                androidx.compose.material3.HorizontalDivider(color = Color(0xFFE3ECF2))
                 phrases.take(3).forEach { phrase ->
                     TextButton(onClick = { selected = phrase; status = "Selected from approved local phrase list" }) {
                         Text(phrase.hindi, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
