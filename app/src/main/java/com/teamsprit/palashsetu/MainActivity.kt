@@ -3,12 +3,14 @@ package com.teamsprit.palashsetu
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -32,6 +35,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -67,10 +71,10 @@ private data class Lesson(val title: String, val subject: String, val outcome: S
 private data class Flashcard(val emoji: String, val hindi: String, val target: String)
 
 private val phrases = listOf(
-    Phrase("गिनकर बताओ कि कितने आम हैं।", "Santhali translation pending native review", "Pending native review"),
-    Phrase("एक-एक करके गिनो।", "Santhali translation pending native review", "Pending native review"),
-    Phrase("चित्र देखकर शब्द बोलो।", "Santhali translation pending native review", "Pending native review"),
-    Phrase("ध्यान से सुनो और दोहराओ।", "Santhali translation pending native review", "Pending native review")
+    Phrase("गिनकर बताओ कि कितने आम हैं।", "No approved Santhali translation installed", "Native content pack not installed"),
+    Phrase("एक-एक करके गिनो।", "No approved Santhali translation installed", "Native content pack not installed"),
+    Phrase("चित्र देखकर शब्द बोलो।", "No approved Santhali translation installed", "Native content pack not installed"),
+    Phrase("ध्यान से सुनो और दोहराओ।", "No approved Santhali translation installed", "Native content pack not installed")
 )
 private val lessons = listOf(
     Lesson("Counting Objects", "Mathematics", "Counting objects", "Count familiar objects from 1 to 10 using oral prompts and pictures."),
@@ -78,15 +82,16 @@ private val lessons = listOf(
     Lesson("More or Less", "Mathematics", "More and less", "Compare two groups of familiar objects.")
 )
 private val cards = listOf(
-    Flashcard("🥭", "आम", "Santhali word pending review"),
-    Flashcard("📖", "किताब", "Santhali word pending review"),
-    Flashcard("3️⃣", "तीन", "Santhali word pending review"),
-    Flashcard("🏠", "घर", "Santhali word pending review")
+    Flashcard("🥭", "आम", "No approved Santhali word installed"),
+    Flashcard("📖", "किताब", "No approved Santhali word installed"),
+    Flashcard("3️⃣", "तीन", "No approved Santhali word installed"),
+    Flashcard("🏠", "घर", "No approved Santhali word installed")
 )
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         setContent { PalashSetuApp() }
     }
 }
@@ -108,7 +113,11 @@ fun PalashSetuApp() {
     ) { padding ->
         Surface(Modifier.fillMaxSize().padding(padding), color = PaleBlue) {
             when (screen) {
-                Screen.HOME -> HomeScreen { screen = Screen.LIVE }
+                Screen.HOME -> HomeScreen(
+                    onLive = { screen = Screen.LIVE },
+                    onLessons = { screen = Screen.LESSONS },
+                    onAids = { screen = Screen.AIDS }
+                )
                 Screen.LIVE -> LiveScreen()
                 Screen.LESSONS -> LessonsScreen()
                 Screen.AIDS -> AidsScreen()
@@ -120,7 +129,7 @@ fun PalashSetuApp() {
 private fun iconFor(screen: Screen) = when (screen) { Screen.HOME -> "⌂"; Screen.LIVE -> "◉"; Screen.LESSONS -> "▣"; Screen.AIDS -> "□" }
 
 @Composable private fun Header() {
-    Row(Modifier.fillMaxWidth().background(Navy).padding(horizontal = 16.dp, vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().statusBarsPadding().background(Navy).padding(horizontal = 16.dp, vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
         Image(painterResource(com.teamsprit.palashsetu.R.drawable.palash_setu_icon), "PALASH Setu logo", Modifier.size(42.dp).clip(RoundedCornerShape(12.dp)), contentScale = ContentScale.Crop)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
@@ -134,7 +143,7 @@ private fun iconFor(screen: Screen) = when (screen) { Screen.HOME -> "⌂"; Scre
     }
 }
 
-@Composable private fun HomeScreen(onLive: () -> Unit) {
+@Composable private fun HomeScreen(onLive: () -> Unit, onLessons: () -> Unit, onAids: () -> Unit) {
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Brush.linearGradient(listOf(Navy, Blue)))) {
@@ -160,12 +169,18 @@ private fun iconFor(screen: Screen) = when (screen) { Screen.HOME -> "⌂"; Scre
             }
         }
         item { Text("Today’s teaching pack", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Navy) }
-        items(lessons.take(2)) { LessonRow(it) }
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(onClick = onLessons, modifier = Modifier.weight(1f)) { Text("All lessons") }
+                Button(onClick = onAids, modifier = Modifier.weight(1f), colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Teal)) { Text("Teaching aids") }
+            }
+        }
+        items(lessons.take(2)) { LessonRow(it, onLessons) }
     }
 }
 
-@Composable private fun LessonRow(lesson: Lesson) {
-    Card(colors = CardDefaults.cardColors(containerColor = Color.White), shape = RoundedCornerShape(14.dp)) {
+@Composable private fun LessonRow(lesson: Lesson, onOpen: () -> Unit) {
+    Card(onClick = onOpen, colors = CardDefaults.cardColors(containerColor = Color.White), shape = RoundedCornerShape(14.dp)) {
         Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(45.dp).clip(RoundedCornerShape(12.dp)).background(PaleOrange), contentAlignment = Alignment.Center) { Text(if (lesson.subject == "Mathematics") "#" else "अ", fontSize = 22.sp, color = Orange, fontWeight = FontWeight.Bold) }
             Spacer(Modifier.width(12.dp)); Column(Modifier.weight(1f)) { Text(lesson.title, fontWeight = FontWeight.Bold, color = Navy); Text(lesson.subject, fontSize = 12.sp, color = Color.Gray); Text(lesson.outcome, fontSize = 12.sp, color = Teal) }
@@ -197,7 +212,11 @@ private fun findApprovedPhrase(recognisedHindi: String): Phrase? {
     var listening by remember { mutableStateOf(false) }
     val context = androidx.compose.ui.platform.LocalContext.current
     val recognizer = remember(context) {
-        if (SpeechRecognizer.isRecognitionAvailable(context)) SpeechRecognizer.createSpeechRecognizer(context) else null
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && SpeechRecognizer.isOnDeviceRecognitionAvailable(context) -> SpeechRecognizer.createOnDeviceSpeechRecognizer(context)
+            SpeechRecognizer.isRecognitionAvailable(context) -> SpeechRecognizer.createSpeechRecognizer(context)
+            else -> null
+        }
     }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         status = if (granted) "Microphone enabled. Press voice again to start." else "Microphone permission is required for voice input."
@@ -277,9 +296,10 @@ private fun findApprovedPhrase(recognisedHindi: String): Phrase? {
                 measuredLatencyMs?.let { Text("Measured local recognition + lookup: ${it} ms", fontSize = 11.sp, color = Color.Gray) }
                 Spacer(Modifier.height(8.dp))
                 androidx.compose.material3.HorizontalDivider(color = Color(0xFFE3ECF2))
+                Text("Try a sample prompt", fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
                 phrases.take(3).forEach { phrase ->
-                    TextButton(onClick = { selected = phrase; status = "Selected from approved local phrase list" }) {
-                        Text(phrase.hindi, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
+                    OutlinedButton(onClick = { selected = phrase; recognisedHindi = phrase.hindi; status = "Sample loaded from the local phrase list" }, modifier = Modifier.fillMaxWidth()) {
+                        Text(phrase.hindi, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth(), color = Navy)
                     }
                 }
             }
@@ -304,9 +324,29 @@ private fun findApprovedPhrase(recognisedHindi: String): Phrase? {
 }
 
 @Composable private fun LessonsScreen() {
+    var openedLesson by remember { mutableStateOf<String?>(null) }
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { Text("Lesson library", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Navy); Text("Mapped to foundational literacy and numeracy outcomes", color = Color.Gray) }
-        items(lessons) { lesson -> Card(colors = CardDefaults.cardColors(containerColor = Color.White), shape = RoundedCornerShape(15.dp)) { Column(Modifier.padding(16.dp)) { Text(lesson.title, fontWeight = FontWeight.Bold, color = Navy, fontSize = 18.sp); Text("${lesson.subject} • NIPUN outcome: ${lesson.outcome}", color = Teal, fontSize = 12.sp); Spacer(Modifier.height(5.dp)); Text(lesson.description, color = Color.DarkGray); TextButton(onClick = {}) { Text("Open lesson") } } } }
+        item {
+            Text("Lesson library", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Navy)
+            Text("Mapped to foundational literacy and numeracy outcomes", color = Color.Gray)
+            openedLesson?.let { title ->
+                Spacer(Modifier.height(10.dp))
+                Card(colors = CardDefaults.cardColors(containerColor = PaleTeal), shape = RoundedCornerShape(14.dp)) {
+                    Text("Opened: $title\\n\\nTeacher guide ready for the classroom.", Modifier.padding(16.dp), color = Navy, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+        items(lessons) { lesson ->
+            Card(onClick = { openedLesson = lesson.title }, colors = CardDefaults.cardColors(containerColor = Color.White), shape = RoundedCornerShape(15.dp)) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(lesson.title, fontWeight = FontWeight.Bold, color = Navy, fontSize = 18.sp)
+                    Text("${lesson.subject} • NIPUN outcome: ${lesson.outcome}", color = Teal, fontSize = 12.sp)
+                    Spacer(Modifier.height(5.dp))
+                    Text(lesson.description, color = Color.DarkGray)
+                    TextButton(onClick = { openedLesson = lesson.title }) { Text("Open lesson") }
+                }
+            }
+        }
     }
 }
 
