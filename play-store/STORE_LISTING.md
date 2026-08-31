@@ -24,8 +24,9 @@ The app is designed for low-cost Android 9+ tablets and follows a safety-first c
 
 PALASH Setu is an SIH26042 prototype by Team Sprit. Ho and Mundari are planned expansion languages and are not claimed as supported in this first release.
 
-## Release notes — 0.1.0
+## Release notes — 0.1.1
 
+- New PALASH Setu flower-and-book app icon
 - Santhali-first offline teaching dashboard
 - FLN lesson cards
 - optional offline-preferred Hindi speech input
